@@ -4,13 +4,21 @@
 [![CI](https://github.com/eclipse-zenoh/zenoh-plugin-dds/workflows/Rust/badge.svg)](https://github.com/eclipse-zenoh/zenoh-plugin-dds/actions?query=workflow%3ARust)
 --->
 [![Discussion](https://img.shields.io/badge/discussion-on%20github-blue)](https://github.com/eclipse-zenoh/roadmap/discussions)
-[![Discord](https://img.shields.io/badge/chat-on%20discord-blue)](https://discord.gg/vSDSpqnbkm)
+[![Discord](https://img.shields.io/badge/chat-on%20discord-blue)](https://discord.gg/2GJ958VuHs)
 [![License](https://img.shields.io/badge/License-EPL%202.0-blue)](https://choosealicense.com/licenses/epl-2.0/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# DDS plugin for Eclipse zenoh, and standalone `zenoh-bridge-dds`
+# Eclipse Zenoh
+The Eclipse Zenoh: Zero Overhead Pub/sub, Store/Query and Compute.
 
-:point_right: **Download stable versions:** https://download.eclipse.org/zenoh/zenoh-plugin-dds/
+Zenoh (pronounce _/zeno/_) unifies data in motion, data at rest and computations. It carefully blends traditional pub/sub with geo-distributed storages, queries and computations, while retaining a level of time and space efficiency that is well beyond any of the mainstream stacks.
+
+Check the website [zenoh.io](http://zenoh.io) and the [roadmap](https://github.com/eclipse-zenoh/roadmap) for more detailed information.
+
+-------------------------------
+# DDS plugin and standalone `zenoh-bridge-dds`
+
+:point_right: **Install latest release:** see [below](#How-to-install-it)
 
 :point_right: **Docker image:** see [below](#Docker-image)
 
@@ -33,7 +41,39 @@ Thus, the main motivations to have a **DDS plugin** for **Eclipse zenoh** are:
 As any plugin for Eclipse zenoh, it can be dynamically loaded by a zenoh router, at startup or at runtime.  
 In addition, this project also provides a standalone version of this plugin as an executable binary named `zenoh-bridge-dds`.
 
+## How to install it
+
+To install the latest release of either the DDS plugin for the Zenoh router, either the `zenoh-bridge-dds` standalone executable, you can do as follows:
+
+### Manual installation (all platforms)
+
+All release packages can be downloaded from:  
+ - https://download.eclipse.org/zenoh/zenoh-plugin-dds/latest/   
+
+Each subdirectory has the name of the Rust target. See the platforms each target corresponds to on https://doc.rust-lang.org/stable/rustc/platform-support.html
+
+Choose your platform and download:
+ - the `zplugin-dds-<version>-<platform>.zip` file for the plugin.  
+   Then unzip it in the same directory than `zenohd` or to any directory where it can find the plugin library (e.g. /usr/lib)
+ - the `zenoh-bridge-dds-<version>-<platform>.zip` file for the standalone executable.  
+   Then unzip it where you want, and run the extracted `zenoh-bridge-dds` binary.
+
+### Linux Debian
+
+Add Eclipse Zenoh private repository to the sources list:
+
+```bash
+echo "deb [trusted=yes] https://download.eclipse.org/zenoh/debian-repo/ /" | sudo tee -a /etc/apt/sources.list > /dev/null
+sudo apt update
+```
+Then either:
+  - install the plugin with: `sudo apt install zenoh-plugin-dds`.
+  - install the standalone executable with: `sudo apt install zenoh-bridge-dds`.
+
 ## How to build it
+
+> :warning: **WARNING** :warning: : Zenoh and its ecosystem are under active development. When you build from git, make sure you also build from git any other Zenoh repository you plan to use (e.g. binding, plugin, backend, etc.). It may happen that some changes in git are not compatible with the most recent packaged Zenoh release (e.g. deb, docker, pip). We put particular effort in mantaining compatibility between the various git repositories in the Zenoh project.
+
 In order to build the zenoh bridge for DDS you need first to install the following dependencies:
 
 - [Rust](https://www.rust-lang.org/tools/install)
@@ -49,6 +89,7 @@ Once these dependencies are in place, you may clone the repository on your machi
 $ git clone https://github.com/eclipse-zenoh/zenoh-plugin-dds.git
 $ cd zenoh-plugin-dds
 ```
+> :warning: **WARNING** :warning: : On Linux, don't use `cargo build` command without specifying a package with `-p`. Building both `zplugin-dds` (plugin library) and `zenoh-bridge-dds` (standalone executable) together will lead to a `multiple definition of `load_plugin'` error at link time. See [#117](https://github.com/eclipse-zenoh/zenoh-plugin-dds/issues/117#issuecomment-1439694331) for explanations.
 
 You can then choose between building the zenoh bridge for DDS:
 - as a plugin library that can be dynamically loaded by the zenoh router (`zenohd`):
@@ -63,6 +104,7 @@ $ cargo build --release -p zenoh-bridge-dds
 ```
 The **`zenoh-bridge-dds`** binary will be generated in the `target/release` sub-directory.
 
+
 ### ROS2 package
 If you're a ROS2 user, you can also build `zenoh-bridge-dds` as a ROS package running:
 ```bash
@@ -73,7 +115,8 @@ The `rosdep` command will automatically install *Rust* and *clang* as build depe
 
 ## Docker image
 The **`zenoh-bridge-dds`** standalone executable is also available as a [Docker images](https://hub.docker.com/r/eclipse/zenoh-bridge-dds/tags?page=1&ordering=last_updated) for both amd64 and arm64. To get it, do:
-  - `docker pull eclipse/zenoh-bridge-dds:master` for the master branch version
+  - `docker pull eclipse/zenoh-bridge-dds:latest` for the latest release
+  - `docker pull eclipse/zenoh-bridge-dds:master` for the master branch version (nightly build)
 
 :warning: **However, notice that it's usage is limited to Docker on Linux and using the `--net host` option.**  
 The cause being that DDS uses UDP multicast and Docker doesn't support UDP multicast between a container and its host (see cases [moby/moby#23659](https://github.com/moby/moby/issues/23659), [moby/libnetwork#2397](https://github.com/moby/libnetwork/issues/2397) or [moby/libnetwork#552](https://github.com/moby/libnetwork/issues/552)). The only known way to make it work is to use the `--net host` option that is [only supported on Linux hosts](https://docs.docker.com/network/host/).
@@ -105,7 +148,7 @@ In such cases, deploying the `zenoh-bridge-dds` on both hosts will make it to:
 Here are the commands to test this configuration with turtlesim:
   - on host 1:
     - `ROS_DOMAIN_ID=1 ros2 run turtlesim turtlesim_node`
-    - `./target/release/zenoh-bridge-dds -d 1`
+    - `./target/release/zenoh-bridge-dds -d 1 -l tcp/0.0.0.0:7447`
   - on host 2:
     - `ROS_DOMAIN_ID=2 ros2 run turtlesim turtle_teleop_key`
     - `./target/release/zenoh-bridge-dds -d 2 -e tcp/<host-1-ip>:7447` - where `<host-1-ip>` is the IP of host 1
@@ -145,7 +188,7 @@ But using the **`--fwd-discovery`** (or `-f`) option for all bridges make them b
 ### _Limiting the ROS2 topics, services, parameters or actions to be routed_
 By default 2 zenoh bridges will route all ROS2 topics and services for which they detect a Writer on one side and a Reader on the other side. But you might want to avoid some topics and services to be routed by the bridge.
 
-Starting `zenoh-bridge-dds` you can use the `--allow` argument to specify the subset of topics and services that will be routed by the bridge. This argument accepts a string wich is a regular expression that must match a substring of an allowed zenoh key (see details of [mapping of ROS2 names to zenoh keys](#mapping-ros2-names-to-zenoh-resources)).
+Starting `zenoh-bridge-dds` you can use the `--allow` argument to specify the subset of topics and services that will be routed by the bridge. This argument accepts a string wich is a regular expression that must match a substring of an allowed zenoh key (see details of [mapping of ROS2 names to zenoh keys](#mapping-ros2-names-to-zenoh-keys)).
 
 Here are some examples of usage:
 | `--allow` value | allowed ROS2 communication |
@@ -167,7 +210,7 @@ A simple way to address this issue using the zenoh bridge is to:
  - have each bridge started with the `--scope "/<id>"` argument, each robot having its own id.
  - make sure each robot cannot directly communicate via DDS with another robot by setting a distinct domain per robot, or configuring its network interface to not route UDP multicast outside the host.
 
-Using the `--scope` option, a prefix is added to each zenoh key published/subscribed by the bridge (more details in [mapping of ROS2 names to zenoh keys](#mapping-ros2-names-to-zenoh-resources)). To interact with a robot, a remote ROS2 application must use a zenoh bridge configured with the same scope than the robot.  
+Using the `--scope` option, a prefix is added to each zenoh key published/subscribed by the bridge (more details in [mapping of ROS2 names to zenoh keys](#mapping-ros2-names-to-zenoh-keys)). To interact with a robot, a remote ROS2 application must use a zenoh bridge configured with the same scope than the robot.  
 
 ### _Closer integration of ROS2 with zenoh_
 As you understood, using the zenoh bridge, each ROS2 publications and subscriptions are mapped to a zenoh key. Therefore, its relatively easy to develop an application using one of the [zenoh APIs](https://zenoh.io/docs/apis/apis/) to interact with one or more robot at the same time.
@@ -194,13 +237,14 @@ The `"dds"` part of this same configuration file can also be used in the configu
    - **`--rest-http-port <rest-http-port>`** : set the REST API http port (default: 8000)
  * DDS-related arguments:
    - **`-d, --domain <ID>`** : The DDS Domain ID. By default set to `0`, or to `"$ROS_DOMAIN_ID"` is this environment variable is defined.
-   - **`dds-localhost-only`** : If set, the DDS discovery and traffic will occur only on the localhost interface (127.0.0.1).
+   - **`--dds-localhost-only`** : If set, the DDS discovery and traffic will occur only on the localhost interface (127.0.0.1).
      By default set to false, unless the "ROS_LOCALHOST_ONLY=1" environment variable is defined.
    - **`-f, --fwd-discovery`** : When set, rather than creating a local route when discovering a local DDS entity, this discovery info is forwarded to the remote plugins/bridges. Those will create the routes, including a replica of the discovered entity. More details [here](#full-support-of-ros-graph-and-topic-lists-via-the-forward-discovery-mode)
    - **`-s, --scope <String>`** : A string used as prefix to scope DDS traffic when mapped to zenoh keys.
    - **`-a, --allow <String>`** :  A regular expression matching the set of 'partition/topic-name' that must be routed via zenoh.
      By default, all partitions and topics are allowed.  
      If both 'allow' and 'deny' are set a partition and/or topic will be allowed if it matches only the 'allow' expression.  
+     Repeat this option to configure several topic expressions. These expressions are concatenated with '|'.
      Examples of expressions: 
         - `.*/TopicA` will allow only the `TopicA` to be routed, whatever the partition.
         - `PartitionX/.*` will allow all the topics to be routed, but only on `PartitionX`.
@@ -208,11 +252,16 @@ The `"dds"` part of this same configuration file can also be used in the configu
    - **`--deny <String>`** :  A regular expression matching the set of 'partition/topic-name' that must NOT be routed via zenoh.
      By default, no partitions and no topics are denied.  
      If both 'allow' and 'deny' are set a partition and/or topic will be allowed if it matches only the 'allow' expression.  
+     Repeat this option to configure several topic expressions. These expressions are concatenated with '|'.
    - **`--max-frequency <String>...`** : specifies a maximum frequency of data routing over zenoh per-topic. The string must have the format `"regex=float"` where:
        - `"regex"` is a regular expression matching the set of 'partition/topic-name' for which the data (per DDS instance) must be routedat no higher rate than associated max frequency (same syntax than --allow option).
        - `"float"` is the maximum frequency in Hertz; if publication rate is higher, downsampling will occur when routing.
 
        (usable multiple times)
+   - **`--queries-timeout <Duration>`**: A duration in seconds (default: 5.0 sec) that will be used as a timeout when the bridge
+     queries any other remote bridge for discovery information and for historical data for TRANSIENT_LOCAL DDS Readers it serves
+     (i.e. if the query to the remote bridge exceed the timeout, some historical samples might be not routed to the Readers,
+     but the route will not be blocked forever).
    - **`-w, --generalise-pub <String>`** :  A list of key expressions to use for generalising the declaration of
      the zenoh publications, and thus minimizing the discovery traffic (usable multiple times).
      See [this blog](https://zenoh.io/blog/2021-03-23-discovery/#leveraging-resource-generalisation) for more details.
